@@ -4,3 +4,4 @@
     <a href="{{ route('education') }}">Education</a> |
     <a href="{{ route('projects') }}">Projects</a>
 </nav>
+
