@@ -1,7 +1,26 @@
 <?php
 
 namespace App\Models; 
+
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model; 
-class Post extends Model { 
-    protected $fillable = [ 'title', 'description', ]; 
+use Illuminate\Database\Eloquent\SoftDeletes; 
+
+class Post extends Model 
+{ 
+    use SoftDeletes;
+    
+    protected $fillable = ['title', 'description', 'status'];
+
+    public function scopePublished(Builder $query): Builder
+   {
+       return $query->where('status', 'published');
+   }
+
+   public function scopeDraft(Builder $query): Builder
+   {
+       return $query->where('status', 'draft');
+   }
 }
+
+

@@ -1,19 +1,25 @@
 @extends('layouts.app')
+@section('title', $post->title)
 
 @section('content')
-<div class="jumbotron jumbotron-fluid">
-    <div class="container">
-        <h1>{{ $posts->title }}</h1>
-        <small>Tanggal: {{ $posts->created_at }}</small>
-        <p>{{ $posts->description }}</p>
+    <div class="card">
+        <div class="flex items-start justify-between gap-3">
+            <h1 class="page-title">{{ $post->title }}</h1>
+            @include('posts._badge', ['status' => $post->status])
+        </div>
+        <p class="mt-1 text-xs text-slate-400">Tanggal: {{ $post->created_at->format('d M Y, H:i') }}</p>
+        <p class="mt-3 whitespace-pre-line text-slate-600">{{ $post->description }}</p>
 
-        <a href="{{ route('posts.edit', $posts->id) }}" class="btn btn-primary">Edit</a>
-        <form action="{{ route('posts.destroy', $posts->id) }}" method="POST" style="display:inline" onsubmit="return confirm('Yakin ingin menghapus post ini?')">
-            @csrf
-            @method('DELETE')
-            <button type="submit" class="btn btn-danger">Delete</button>
-        </form>
-        <a href="{{ route('posts.index') }}">Back to List</a>
+        <div class="mt-4 flex flex-wrap items-center gap-2 text-sm">
+            <a href="{{ route('posts.edit', $post->id) }}" class="link">Edit</a>
+            <span class="text-slate-300">|</span>
+            <form action="{{ route('posts.destroy', $post->id) }}" method="POST" class="inline"
+                  onsubmit="return confirm('Post akan dipindahkan ke Trash. Lanjutkan?')">
+                @csrf @method('DELETE')
+                <button type="submit" class="link-danger">Delete</button>
+            </form>
+            <span class="text-slate-300">|</span>
+            <a href="{{ route('posts.index') }}" class="link">Back to List</a>
+        </div>
     </div>
-</div>
 @endsection

@@ -3,6 +3,8 @@
 @section('title', 'About')
 
 @section('content')
-    <h1>Tentang Saya</h1>
-    <p>Saya adalah mahasiswa TRPL UGM semester 3. Saya senang belajar Pemrograman Web Lanjut.</p>
+    <div class="card">
+        <h1 class="page-title">Tentang Saya</h1>
+        <p class="mt-2 text-slate-500">Saya adalah mahasiswa TRPL UGM semester 3.</p>
+    </div>
 @endsection

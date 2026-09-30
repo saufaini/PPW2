@@ -1,0 +1,1 @@
+<span class="badge {{ $status === 'published' ? 'badge-published' : 'badge-draft' }}">{{ ucfirst($status) }}</span>
