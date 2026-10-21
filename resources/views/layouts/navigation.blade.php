@@ -25,5 +25,3 @@
     </div>
 </nav>
 
-<!--         ['Projects', 'projects', 'projects*'],
- -->

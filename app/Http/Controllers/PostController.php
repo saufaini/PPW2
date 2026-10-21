@@ -20,7 +20,24 @@ class PostController extends Controller
             $query->draft();
         }
 
-        $posts = $query->orderBy('created_at', 'desc')->get();
+        $posts = $query->orderBy('created_at', 'desc')->paginate(5)->withQueryString();;
+
+
+
+
+
+        $perPage = in_array((int) $request->per_page, [5, 10, 25])
+            ? (int) $request->per_page
+            : 5;
+
+        $posts = $query->orderBy('created_at', 'desc')
+                    ->paginate($perPage)
+                    ->withQueryString();
+
+
+
+
+
 
         $stats = [
             'total'     => Post::count(),

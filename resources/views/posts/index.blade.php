@@ -34,6 +34,22 @@
                 <option value="draft" @selected(request('status') === 'draft')>Draft</option>
             </select>
         </div>
+
+
+
+        <div>
+            <label for="per_page" class="label">Per halaman</label>
+            <select id="per_page" name="per_page" class="input">
+                @foreach ([5, 10, 25] as $n)
+                    <option value="{{ $n }}" @selected((int) request('per_page', 10)) === $n)>{{ $n }}</option>
+                @endforeach
+            </select>
+        </div>
+
+
+
+
+
         <button type="submit" class="btn btn-primary">Filter</button>
         <a href="{{ route('posts.index') }}" class="link self-center text-sm">Reset</a>
     </form>
@@ -42,6 +58,7 @@
         <div class="card mb-4">
             <div class="flex items-start justify-between gap-3">
                 <h3 class="text-lg font-semibold">
+                    {{ $posts->firstItem() + $loop->index }}.
                     <a href="{{ route('posts.show', $post->id) }}" class="link">{{ $post->title }}</a>
                 </h3>
                 @include('posts._badge', ['status' => $post->status])
@@ -62,4 +79,14 @@
     @empty
         <div class="card text-center text-slate-500">Tidak ada data.</div>
     @endforelse
+
+    <div class="mt-4 text-sm text-slate-500">
+        Halaman : {{ $posts->currentPage() }} <br>
+        Jumlah Data : {{ $posts->total() }} <br>
+        Data Per Halaman : {{ $posts->perPage() }}
+    </div>
+
+    <div class="mt-4">
+        {{ $posts->links() }}
+    </div>
 @endsection
