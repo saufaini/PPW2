@@ -22,6 +22,19 @@
                 </li>
             @endforeach
         </ul>
+                </ul>
+
+        @auth
+            <div class="flex items-center gap-3 text-sm">
+                <span class="text-slate-600">{{ Auth::user()->name }}</span>
+                <form method="POST" action="{{ route('logout') }}">
+                    @csrf
+                    <button type="submit" class="text-slate-500 hover:text-indigo-600">Logout</button>
+                </form>
+            </div>
+        @endauth
+    </div>
+</nav>
     </div>
 </nav>
 
