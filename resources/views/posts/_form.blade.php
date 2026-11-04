@@ -8,7 +8,7 @@
     </div>
 @endif
 
-<form action="{{ $editing ? route('posts.update', $post->id) : route('posts.store') }}" method="POST" class="space-y-5">
+<form action="{{ $editing ? route('posts.update', $post->id) : route('posts.store') }}" method="POST" enctype="multipart/form-data" class="space-y-5">
     @csrf
     @if ($editing) @method('PUT') @endif
 
@@ -28,6 +28,15 @@
             <option value="published" @selected($current === 'published')>Published</option>
         </select>
     </div>
+
+    <div>
+        <label for="thumbnail" class="label">Thumbnail</label>
+        <input type="file" id="thumbnail" name="thumbnail" accept="image/*" class="input">
+        @error('thumbnail')
+            <p class="text-sm text-red-500">{{ $message }}</p>
+        @enderror
+    </div>
+
     <div class="flex items-center gap-3">
         <button type="submit" class="btn btn-primary">{{ $editing ? 'Update' : 'Submit' }}</button>
         <a href="{{ route('posts.index') }}" class="link text-sm">Back to List</a>

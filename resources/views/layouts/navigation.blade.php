@@ -4,6 +4,7 @@
         ['Profile', 'profile', 'profile'],
         ['About', 'about', 'about'],
         ['Education', 'education', 'education'],
+        ['Experience', 'experience', 'experience'],
         ['Posts', 'posts.index', 'posts.*'],
     ];
 @endphp

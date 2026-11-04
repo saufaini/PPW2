@@ -7,3 +7,4 @@
         @include('posts._form')
     </div>
 @endsection
+

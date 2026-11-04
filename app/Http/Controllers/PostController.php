@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use App\Models\Post;
+use Illuminate\Support\Facades\Storage;
 
 class PostController extends Controller
 {
@@ -22,10 +23,6 @@ class PostController extends Controller
 
         $posts = $query->orderBy('created_at', 'desc')->paginate(5)->withQueryString();;
 
-
-
-
-
         $perPage = in_array((int) $request->per_page, [5, 10, 25])
             ? (int) $request->per_page
             : 5;
@@ -33,11 +30,6 @@ class PostController extends Controller
         $posts = $query->orderBy('created_at', 'desc')
                     ->paginate($perPage)
                     ->withQueryString();
-
-
-
-
-
 
         $stats = [
             'total'     => Post::count(),
@@ -51,6 +43,7 @@ class PostController extends Controller
 
         return view('posts.index', compact('posts', 'stats'));
     }
+    
 
 
     public function create()
@@ -58,19 +51,32 @@ class PostController extends Controller
         return view('posts.create');
     }
 
-    public function store(Request $request)
-    {
-        $request->validate([
-            'title' => 'required|max:200',
-            'description' => 'required|min:10',
-            'status' => 'required|in:draft,published',
-        ]);
+public function store(Request $request)
+{
+    $request->validate([
+        'title' => 'required|max:200',
+        'description' => 'required|min:10',
+        'status' => 'required|in:draft,published',
+        'thumbnail' => 'nullable|image|mimes:jpg,jpeg,png,webp|max:2048|dimensions:min_width=400,min_height=300',
+    ]);
 
-        Post::create($request->only(['title', 'description', 'status']));
+    $data = $request->only(['title', 'description', 'status']);
 
-        return redirect()->route('posts.index')
-            ->with('success', 'Post berhasil ditambahkan.');
+    if ($request->hasFile('thumbnail')) {
+        $data['thumbnail'] = $request->file('thumbnail')
+            ->store('posts/thumbnails', 'public');
     }
+
+    Post::create($data);
+
+    return redirect()->route('posts.index')
+        ->with('success', 'Post berhasil ditambahkan.');
+}
+
+
+
+
+    
 
     public function show($id)
     {
@@ -101,11 +107,18 @@ class PostController extends Controller
             'title' => 'required|max:200',
             'description' => 'required|min:10',
             'status' => 'required|in:draft,published',
+            'thumbnail' => 'nullable|image|mimes:jpg,jpeg,png,webp|max:2048|dimensions:min_width=400,min_height=300',
         ]);
 
         $post = Post::findOrFail($id);
+        $oldThumbnail = $post->thumbnail;
 
         $post->fill($request->only(['title', 'description', 'status']));
+
+        if ($request->hasFile('thumbnail')) {
+            $post->thumbnail = $request->file('thumbnail')
+                ->store('posts/thumbnails', 'public');
+        }
 
         if (! $post->isDirty()) {
             return redirect()->route('posts.index')->with('info', 'Tidak ada perubahan data.');
@@ -113,11 +126,12 @@ class PostController extends Controller
 
         $post->save();
 
+        if ($request->hasFile('thumbnail') && $oldThumbnail) {
+            Storage::disk('public')->delete($oldThumbnail);
+        }
+
         return redirect()->route('posts.index')
             ->with('success', 'Post berhasil diperbarui.');
-
-                return redirect()->route('posts.index')
-                    ->with('success', 'Post berhasil diperbarui.');
     }
 
     public function destroy($id)
@@ -143,9 +157,32 @@ class PostController extends Controller
         return redirect()->route('posts.trash')->with('success', 'Post berhasil dikembalikan.');
     }
 
+    // public function forceDelete($id)
+    // {
+    //     $post = Post::onlyTrashed()->findOrFail($id);
+
+    //     if ($post->thumbnail) {
+    //         Storage::disk('public')->delete($post->thumbnail);
+    //     }
+
+    //     $post->forceDelete();
+
+    //     return redirect()->route('posts.trash')->with('success', 'Post dihapus permanen.');
+    // }
+
+
     public function forceDelete($id)
     {
         $post = Post::onlyTrashed()->findOrFail($id);
+
+        if ($post->thumbnail) {
+            Storage::disk('public')->delete($post->thumbnail);
+        }
+
+        foreach ($post->images as $image) {
+            Storage::disk('public')->delete($image->image);
+        }
+
         $post->forceDelete();
 
         return redirect()->route('posts.trash')->with('success', 'Post dihapus permanen.');

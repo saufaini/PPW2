@@ -63,6 +63,11 @@
                 </h3>
                 @include('posts._badge', ['status' => $post->status])
             </div>
+            @if ($post->thumbnail)
+                <img src="{{ asset('storage/' . $post->thumbnail) }}"
+                    alt="{{ $post->title }}" class="mt-2 h-32 rounded">
+            @endif
+            
             <p class="mt-1 text-xs text-slate-400">Tanggal: {{ $post->created_at->format('d M Y, H:i') }}</p>
             <p class="mt-2 text-slate-600">{{ \Illuminate\Support\Str::limit($post->description, 160) }}</p>
 
