@@ -1,0 +1,28 @@
+<?php
+
+use Illuminate\Database\Migrations\Migration;
+use Illuminate\Database\Schema\Blueprint;
+use Illuminate\Support\Facades\Schema;
+
+return new class extends Migration
+{
+    /**
+     * Run the migrations.
+     */
+    public function up(): void
+    {
+        Schema::table('posts', function (Blueprint $table) {
+            $table->string('slug')->nullable()->unique()->after('title');
+            $table->string('short_description')->nullable()->after('slug');
+            $table->date('post_date')->nullable()->after('status');
+        });
+    }
+
+    public function down(): void
+    {
+        Schema::table('posts', function (Blueprint $table) {
+            $table->dropUnique(['slug']);
+            $table->dropColumn(['slug', 'short_description', 'post_date']);
+        });
+    }
+};

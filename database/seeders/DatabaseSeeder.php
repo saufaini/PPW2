@@ -13,13 +13,6 @@ class DatabaseSeeder extends Seeder
     use WithoutModelEvents;
     public function run(): void
     {
-        // User::factory(10)->create();
-
-        // User::factory()->create([
-        //     'name' => 'Test User',
-        //     'email' => 'test@example.com',
-        // ]);
-
         User::updateOrCreate(
             ['email' => 'admin@example.com'],
             [
@@ -30,6 +23,8 @@ class DatabaseSeeder extends Seeder
         );
 
     $this->call([
+        CategorySeeder::class,
+        TechnologySeeder::class,
         PostTableSeeder::class, // truncate + 10 post
         RandomPostSeeder::class,  // +25 post
         ]);

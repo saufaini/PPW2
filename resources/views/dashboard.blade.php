@@ -4,11 +4,14 @@
 @section('content')
     <h1 class="page-title mb-6">Dashboard</h1>
 
-    <div class="mb-6 grid grid-cols-2 gap-4 md:grid-cols-4">
+    <div class="mb-6 grid grid-cols-2 gap-4 md:grid-cols-3">
         <x-stat-card label="Total Post" :value="$totalPosts" />
         <x-stat-card label="Published" :value="$totalPublished" color="text-green-600" />
         <x-stat-card label="Draft" :value="$totalDraft" color="text-orange-600" />
         <x-stat-card label="Trash" :value="$totalTrashed" color="text-purple-600" />
+
+        <x-stat-card label="Messages" :value="$totalMessages" color="text-sky-600" />
+        <x-stat-card label="Belum Dibaca" :value="$unreadMessages" color="text-rose-600" />
     </div>
     
     <h2 class="mb-3 text-lg font-semibold">Post per Bulan</h2>

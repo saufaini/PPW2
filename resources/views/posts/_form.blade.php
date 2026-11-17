@@ -29,6 +29,57 @@
         </select>
     </div>
 
+
+
+
+    <div>
+        <label for="short_description" class="label">Ringkasan</label>
+        <input type="text" id="short_description" name="short_description" class="input"
+            value="{{ old('short_description', $editing ? $post->short_description : '') }}">
+        @error('short_description')
+            <p class="text-sm text-red-500">{{ $message }}</p>
+        @enderror
+    </div>
+
+    <div>
+        <label for="category_id" class="label">Kategori</label>
+        <select id="category_id" name="category_id" class="input">
+            <option value="">Tanpa kategori</option>
+            @foreach ($categories as $c)
+                <option value="{{ $c->id }}"
+                    @selected((string) old('category_id', $editing ? $post->category_id : '') === (string) $c->id)>
+                    {{ $c->name }}
+                </option>
+            @endforeach
+        </select>
+    </div>
+
+    <div>
+        <label for="post_date" class="label">Tanggal</label>
+        <input type="date" id="post_date" name="post_date" class="input"
+            value="{{ old('post_date', $editing ? $post->post_date : '') }}">
+    </div>
+
+    <div>
+        <span class="label">Technologies</span>
+        @php
+            $dipilih = old('technologies', $editing ? $post->technologies->pluck('id')->all() : []);
+        @endphp
+        <div class="flex flex-wrap gap-4">
+            @foreach ($technologies as $t)
+                <label class="flex items-center gap-2 text-sm">
+                    <input type="checkbox" name="technologies[]" value="{{ $t->id }}"
+                        @checked(in_array($t->id, $dipilih))>
+                    {{ $t->name }}
+                </label>
+            @endforeach
+        </div>
+    </div>
+
+
+
+    
+
     <div>
         <label for="thumbnail" class="label">Thumbnail</label>
         <input type="file" id="thumbnail" name="thumbnail" accept="image/*" class="input">

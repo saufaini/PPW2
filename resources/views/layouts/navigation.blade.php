@@ -6,6 +6,8 @@
         ['Education', 'education', 'education'],
         ['Experience', 'experience', 'experience'],
         ['Posts', 'posts.index', 'posts.*'],
+        ['Blog', 'blog.index', 'blog.*'],
+        ['Contact', 'contact', 'contact'],
     ];
 @endphp
 
@@ -27,6 +29,10 @@
 
         @auth
             <div class="flex items-center gap-3 text-sm">
+                @if (Auth::user()->role === 'admin')
+                    <a href="{{ route('contacts.index') }}" class="text-slate-600 hover:text-indigo-600">Messages</a>
+                @endif
+
                 <span class="text-slate-600">{{ Auth::user()->name }}</span>
                 <form method="POST" action="{{ route('logout') }}">
                     @csrf
@@ -38,4 +44,5 @@
 </nav>
     </div>
 </nav>
+
 

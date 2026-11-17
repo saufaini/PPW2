@@ -5,11 +5,28 @@ use App\Http\Controllers\ProfileController;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\PostGalleryController;
+use App\Http\Controllers\BlogController;
+
+use App\Http\Controllers\ContactController;
+
+use App\Http\Controllers\ContactAdminController;
+
+
 
 // publik
 Route::view('/', 'home')->name('home');
 Route::view('/about', 'about')->name('about');
 Route::view('/education', 'education')->name('education');
+
+Route::get('/blog', [BlogController::class, 'index'])->name('blog.index');
+Route::get('/blog/{post:slug}', [BlogController::class, 'show'])->name('blog.show');
+
+Route::get('/contact', [ContactController::class, 'create'])->name('contact');
+
+Route::post('/contact', [ContactController::class, 'store'])
+    ->middleware('throttle:contact')
+    ->name('contact.store');
+
 Route::view('/experience', 'experience')->name('experience');
 Route::view('/profile-saya', 'profile-saya')
     ->middleware('auth')
@@ -18,10 +35,9 @@ Route::get('/profil', function () {
     return view('profil', ['nama' => 'Saufa Aini Yusra', 'umur' => 19, 'kota' => 'Yogyakarta']);
 })->name('profile');
 
-// bawaan Breeze
-// Route::get('/dashboard', function () {
-//     return view('dashboard');
-// })->middleware(['auth', 'verified'])->name('dashboard');
+
+
+
 
 // wajib login
 Route::middleware(['auth', 'admin'])->group(function () {
@@ -40,6 +56,10 @@ Route::middleware(['auth', 'admin'])->group(function () {
 
     Route::post('/posts/{post}/gallery', [PostGalleryController::class, 'store'])->name('posts.gallery.store');
     Route::delete('/posts/{post}/gallery/{image}', [PostGalleryController::class, 'destroy'])->name('posts.gallery.destroy');
+
+
+    Route::get('/contacts', [ContactAdminController::class, 'index'])->name('contacts.index');
+    Route::get('/contacts/{contact}', [ContactAdminController::class, 'show'])->name('contacts.show');
 });
 
 require __DIR__.'/auth.php';

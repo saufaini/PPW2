@@ -69,6 +69,14 @@
             @endif
             
             <p class="mt-1 text-xs text-slate-400">Tanggal: {{ $post->created_at->format('d M Y, H:i') }}</p>
+
+            <p class="mt-1 text-xs text-slate-500">
+                {{ $post->category?->name ?? 'Tanpa kategori' }}
+                @if ($post->technologies->isNotEmpty())
+                    &middot; {{ $post->technologies->pluck('name')->join(', ') }}
+                @endif
+            </p>
+
             <p class="mt-2 text-slate-600">{{ \Illuminate\Support\Str::limit($post->description, 160) }}</p>
 
             <div class="mt-3 flex items-center gap-2 text-sm">

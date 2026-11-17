@@ -2,15 +2,26 @@
 
 namespace App\Http\Controllers;
 
+
 use Illuminate\Http\Request;
 use App\Models\Post;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Str;
+use App\Models\Category;
+use App\Models\Technology;
 
 class PostController extends Controller
 {
+
+
+
+
+
+
+
     public function index(Request $request)
     {
-        $query = Post::query();
+        $query = Post::with('category', 'technologies');
 
         if ($request->filled('search')) {
             $query->where('title', 'like', '%' . $request->search . '%');
@@ -46,32 +57,55 @@ class PostController extends Controller
     
 
 
+
+
+
+
     public function create()
     {
-        return view('posts.create');
+        return view('posts.create', [
+            'categories'   => Category::orderBy('name')->get(),
+            'technologies' => Technology::orderBy('name')->get(),
+        ]);
     }
 
-public function store(Request $request)
-{
-    $request->validate([
-        'title' => 'required|max:200',
-        'description' => 'required|min:10',
-        'status' => 'required|in:draft,published',
-        'thumbnail' => 'nullable|image|mimes:jpg,jpeg,png,webp|max:2048|dimensions:min_width=400,min_height=300',
-    ]);
 
-    $data = $request->only(['title', 'description', 'status']);
 
-    if ($request->hasFile('thumbnail')) {
-        $data['thumbnail'] = $request->file('thumbnail')
-            ->store('posts/thumbnails', 'public');
+
+
+
+
+
+    public function store(Request $request)
+    {
+        $request->validate([
+            'title' => 'required|max:200',
+            'short_description' => 'nullable|max:255',
+            'description' => 'required|min:10',
+            'status' => 'required|in:draft,published',
+            'post_date' => 'nullable|date',
+            'category_id' => 'nullable|exists:categories,id',
+            'technologies' => 'nullable|array',
+            'technologies.*' => 'exists:technologies,id',
+            'thumbnail' => 'nullable|image|mimes:jpg,jpeg,png,webp|max:2048|dimensions:min_width=400,min_height=300',
+        ]);
+
+        $data = $request->only([
+            'title', 'short_description', 'description', 'status', 'post_date', 'category_id',
+        ]);
+        $data['slug'] = $this->buatSlug($request->title);
+
+        if ($request->hasFile('thumbnail')) {
+            $data['thumbnail'] = $request->file('thumbnail')
+                ->store('posts/thumbnails', 'public');
+        }
+
+        $post = Post::create($data);
+        $post->technologies()->attach($request->technologies ?? []);
+
+        return redirect()->route('posts.index')
+            ->with('success', 'Post berhasil ditambahkan.');
     }
-
-    Post::create($data);
-
-    return redirect()->route('posts.index')
-        ->with('success', 'Post berhasil ditambahkan.');
-}
 
 
 
@@ -80,47 +114,62 @@ public function store(Request $request)
 
     public function show($id)
     {
-        // $data = [
-        //     'id' => "posts",
-        //     'posts' => Post::findOrFail($id),
-        // ];
-          
-        // return view('posts.show')->with($data);
         $post = Post::findOrFail($id);
         return view('posts.show', compact('post'));
     }
 
 
 
+
+
+
+
     public function edit($id)
     {
-        $post = Post::findOrFail($id);
-        $data = [
-            'post' => $post,
-        ];
-        return view('posts.edit', $data);
+        $post = Post::with('technologies')->findOrFail($id);
+
+        return view('posts.edit', [
+            'post'         => $post,
+            'categories'   => Category::orderBy('name')->get(),
+            'technologies' => Technology::orderBy('name')->get(),
+        ]);
     }
+
+
+
+
+
 
     public function update(Request $request, $id)
     {
         $request->validate([
             'title' => 'required|max:200',
+            'short_description' => 'nullable|max:255',
             'description' => 'required|min:10',
             'status' => 'required|in:draft,published',
+            'post_date' => 'nullable|date',
+            'category_id' => 'nullable|exists:categories,id',
+            'technologies' => 'nullable|array',
+            'technologies.*' => 'exists:technologies,id',
             'thumbnail' => 'nullable|image|mimes:jpg,jpeg,png,webp|max:2048|dimensions:min_width=400,min_height=300',
         ]);
 
         $post = Post::findOrFail($id);
         $oldThumbnail = $post->thumbnail;
 
-        $post->fill($request->only(['title', 'description', 'status']));
+        $post->fill($request->only([
+            'title', 'short_description', 'description', 'status', 'post_date', 'category_id',
+        ]));
 
         if ($request->hasFile('thumbnail')) {
             $post->thumbnail = $request->file('thumbnail')
                 ->store('posts/thumbnails', 'public');
         }
 
-        if (! $post->isDirty()) {
+        $hasil = $post->technologies()->sync($request->technologies ?? []);
+        $techBerubah = collect($hasil)->flatten()->isNotEmpty();
+
+        if (! $post->isDirty() && ! $techBerubah) {
             return redirect()->route('posts.index')->with('info', 'Tidak ada perubahan data.');
         }
 
@@ -134,6 +183,11 @@ public function store(Request $request)
             ->with('success', 'Post berhasil diperbarui.');
     }
 
+
+
+
+
+
     public function destroy($id)
     {
         $post = Post::findOrFail($id);
@@ -143,11 +197,23 @@ public function store(Request $request)
             ->with('success', 'Post dipindahkan ke Trash!');
     }
 
+
+
+
+
+
+
     public function trash()
     {
         $posts = Post::onlyTrashed()->orderBy('deleted_at', 'desc')->get();
         return view('posts.trash', compact('posts'));
     }
+
+
+
+
+
+
 
     public function restore($id)
     {
@@ -157,18 +223,10 @@ public function store(Request $request)
         return redirect()->route('posts.trash')->with('success', 'Post berhasil dikembalikan.');
     }
 
-    // public function forceDelete($id)
-    // {
-    //     $post = Post::onlyTrashed()->findOrFail($id);
 
-    //     if ($post->thumbnail) {
-    //         Storage::disk('public')->delete($post->thumbnail);
-    //     }
 
-    //     $post->forceDelete();
 
-    //     return redirect()->route('posts.trash')->with('success', 'Post dihapus permanen.');
-    // }
+
 
 
     public function forceDelete($id)
@@ -186,5 +244,25 @@ public function store(Request $request)
         $post->forceDelete();
 
         return redirect()->route('posts.trash')->with('success', 'Post dihapus permanen.');
+    }
+
+
+
+
+
+
+
+
+    private function buatSlug(string $title): string
+    {
+        $slug = Str::slug($title);
+        $asli = $slug;
+        $i = 2;
+
+        while (Post::withTrashed()->where('slug', $slug)->exists()) {
+            $slug = $asli . '-' . $i++;
+        }
+
+        return $slug;
     }
 }
